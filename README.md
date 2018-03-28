@@ -16,6 +16,7 @@ The basic workflow for these codes is as follows
 2. Run '< ./BC_SRB_Model {}_cns.xyz >' on the newly generated CNS file to calculate the BC/SRB model Cohesive Energies 
 
 The Files are as follows:
+
 BC_SRB_Model - python code that takes in a modified .xyz file and evaluates the BC/SRB model Cohesive Energy
 
 CNS - python code that takes in a regular .xyz file and generates coordination numbers (CNS) and bonding topologies for a given MNP structure and generates a modified .xyz file with this information
