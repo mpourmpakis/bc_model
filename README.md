@@ -17,8 +17,13 @@ The basic workflow for these codes is as follows
 
 The Files are as follows:
 BC_SRB_Model - python code that takes in a modified .xyz file and evaluates the BC/SRB model Cohesive Energy
+
 CNS - python code that takes in a regular .xyz file and generates coordination numbers (CNS) and bonding topologies for a given MNP structure and generates a modified .xyz file with this information
+
 EE_analysisFePt - python code used to analyze the excess energy of the large FePt nanoalloy used in Yang et al. Nature 2017, 542, 75-70
+
 FePt_cns_final.xyz - modified .xyz file with CNS and bonding topology as an example of the output from the CNS code and for use in the EE_analysisFePt code
+
 WF_refer_1.csv - csv file containing the data used in the BC model for the dimer binding energy weight factors (Primary Source)
+
 WF_refer_2.csv - csv file containing secondary data for use in the BC model for the dimer binding energy weight factors
