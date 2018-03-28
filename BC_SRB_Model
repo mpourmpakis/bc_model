@@ -1,0 +1,107 @@
+#!/usr/bin/env python
+# Code for calculating the cohesive energy (CE), using the BC/SRB models, of Arbitrary Metal Nanoparticles (MNP)
+# For details surrounding the module see 10.1021/acs.nanolett.8b00670
+import numpy as np
+import sys
+import csv
+import ase
+import math
+from ase.io import read,write
+
+# This code calculates the cohesive energy of MNPs of 28 transition metals
+
+# Input: modified .xyz file generated from cns code (call this script with the modified .xyz file as an argument)
+# Output: Prints the cohesive energy (CE) of the MNP (in eV)
+
+# Two references are used for bond dissociation energies (BDE)
+# Reference 1: Morse, M. D., Clusters of transition-metal atoms. Chem. Rev. 1986, 86 (6), 1049-1109.
+# Reference 2: Miedema, A. R., Model predictions of the dissociation energies of homonuclear and heteronuclear diatomic molecules of two transition metals. Faraday Symposia of the Chemical Society 1980, 14 (0), 136-148.
+# Reference 1 is prefered because it is experimental values while reference 2 has predictions
+# When data is not availible from reference 1, it will be used from reference 2
+
+# read csv file and returns data as a matrix of floats
+def csv_read(filename):
+	dataraw = np.array(list(csv.reader(open(filename, "rb"), delimiter=",")))
+	data_raw1=np.delete(dataraw,0,0) #delete first row and column
+	data_pure=np.delete(data_raw1,0,1).astype("float")
+	return data_pure
+
+# Read in reference 1 and 2 data
+WF_1=csv_read("WF_refer_1.csv")
+WF_2=csv_read("WF_refer_2.csv")
+
+# Dictionary of metals, with numbers assigned in sequence of element number
+t_metals={"Sc":0,"Ti":1,"V":2,"Cr":3,"Mn":4,"Fe":5,"Co":6,"Ni":7,"Cu":8,"Y":9,"Zr":10,"Nb":11, \
+	"Mo":12,"Tc":13,"Ru":14,"Rh":15,"Pd":16,"Ag":17,"La":18,"Hf":19,"Ta":20,"W":21,"Re":22, \
+	"Os":23,"Ir":24,"Pt":25,"Au":26,"Th":27}
+
+# Dictionary of Bulk Cohesive Energies (BCE)
+# Reference: Charles Kittel. Introduction to Solid State Physics, 8th edition. Hoboken, NJ: John Wiley & Sons, Inc, 2005.
+
+BCE={"Sc":-3.90,"Ti":-4.85,"V":-5.31,"Cr":-4.10,"Mn":-2.92,"Fe":-4.28,"Co":-4.39,"Ni":-4.44, \
+	"Cu":-3.49,"Y":-4.37,"Zr":-7.1914,"Nb":-7.57,"Mo":-6.82,"Tc":-6.85,"Ru":-6.74 ,"Rh":-5.75, \
+	"Pd":-3.89,"Ag":-2.95,"La":-4.47,"Hf":-6.44,"Ta":-8.10,"W":-8.90,"Re":-8.03,"Os":-8.17, \
+	"Ir":-6.94,"Pt":-5.84,"Au":-3.81,"Th":-6.20}
+
+# Check if not enough arguments passed
+if len(sys.argv)<1:
+        print "Wrong number of arguments passed. For example:call with ./BE_All_exp *.xyz"
+        sys.exit()
+
+for item in range(1,len(sys.argv)):
+	moleculename=sys.argv[item]
+	original=read(moleculename)
+	atomicsymbols=original.get_chemical_symbols()
+	atom_types=list(set(atomicsymbols))
+	file1=open(moleculename,'r')
+        # For ease of processing neighbors load all the lines into memory
+	lines=file1.readlines()
+	file1.close()
+	count=0
+	BE=0
+	for line in lines:
+		if count<=1:
+			count+=1
+		else:
+			vals=line.split()
+                        # Isolate CN value of atom i from modified .xyz file
+			CN_i=float(vals[4])
+			name_i=vals[0]
+			BCE_i=BCE[name_i]
+			t_metal_i=t_metals[name_i] #Pull out transition metal reference number
+			i=count-2
+                        # Isolate neighborlist for each atom from modified .xyz file
+			vect=line.split("[") 
+                        nl_i_raw=vect[1][0:-2] 
+                        nl_i_raw_2=nl_i_raw.split(",") 
+                        nl_i = [int(i) for i in nl_i_raw_2]
+                        # Iterate over all nieghbors of i to evaluate the BC model.
+			for j in nl_i: #j is a neighbor of i
+                                k=j+2
+                                line_j=lines[k]
+                                vals_j=line_j.split()
+                                CN_j=float(vals_j[4])
+                                name_j=vals_j[0]
+				BCE_j=BCE[name_j]
+				t_metal_j=t_metals[name_j]
+				t=WF_1[t_metal_i][t_metal_j]
+				if t != 0: #reference 1 is in priority since it's experimental value
+					AB=t
+					AA=WF_1[t_metal_i][t_metal_i]
+					BB=WF_1[t_metal_j][t_metal_j]
+				else: #Switch to reference 2 if reference 1 doesn't have the data
+					AB=WF_2[t_metal_i][t_metal_j]
+					AA=WF_2[t_metal_i][t_metal_i]
+					BB=WF_2[t_metal_j][t_metal_j]
+				if AA==BB: #i and j are same metal, SRB model
+					bl_i=1
+					bl_j=1
+				else: #i and j are different metals, BC model
+                                    # Calculate the gamma, weight factors
+					bl_i=2(AB-BB)/(AA-BB)
+					bl_j=2-bl_i
+                                # Apply the BC/SRB model to add up over all the bonds
+				BE+=(((BCE_i*(CN_i**0.5)/(12**0.5))/CN_i))*(bl_i/float(bl_i+bl_j))+((BCE_j*(CN_j**0.5)/(12**0.5))/CN_j)*(bl_j/float(bl_i+bl_j))
+			count+=1
+        # Print out the evaluated CE of the system.
+	print 'The CE = {} eV for the {} system'.format(BE/(count-2),moleculename)
