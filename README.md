@@ -1,4 +1,4 @@
-# bc_model_nanolett
+# bc_model
 This work is written and used in conjection with our work published in Nanoletters.
 The paper can be found here: https://pubs.acs.org/doi/10.1021/acs.nanolett.8b00670
 If you use the code please cite our paper!
