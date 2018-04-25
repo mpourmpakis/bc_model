@@ -3,6 +3,8 @@ This work is written and used in conjection with our work published in Nanolette
 The paper can be found here: https://pubs.acs.org/doi/10.1021/acs.nanolett.8b00670
 If you use the code please cite our paper!
 
+1. Yan, Z.; Taylor, M. G.; Mascareno, A.; Mpourmpakis, G. "Size-, Shape-, and Composition-Dependent Model for Metal Nanoparticle Stability Prediction" Nano Lett. 2018, 18 (4), 2696–2704.
+
 To run these codes you will need access to Python 2.7 and the Atomic Simulation Environment (ASE)
 Python 2.7: https://www.python.org/download/releases/2.7.4/
 ASE: https://wiki.fysik.dtu.dk/ase/
